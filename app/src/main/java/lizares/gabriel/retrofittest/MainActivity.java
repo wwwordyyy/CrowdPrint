@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
         uploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createJobWithFile();
+                createJobWithFile(fileURI, txtFileName.getText().toString(), MainActivity.this);
+
             }
         });
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 findFile();
+
             }
         });
 
@@ -63,16 +65,15 @@ public class MainActivity extends AppCompatActivity {
 
     private String setFileName(Uri sourceURI, Context context) {
         File temp = new File(sourceURI.getPath());
-
         String unparsedFileName = temp.getName();
-         String parsedFileName;
+        String parsedFileName = unparsedFileName;
         //check if file name has an extension
-        if (unparsedFileName.lastIndexOf(".") != unparsedFileName.length() - 1) {
-            parsedFileName = unparsedFileName.substring(0, unparsedFileName.lastIndexOf("."));
-        } else {
-            parsedFileName = unparsedFileName;
+        if (unparsedFileName.contains(".")) {
+            if (unparsedFileName.lastIndexOf(".") != unparsedFileName.length() - 1) {
+                parsedFileName = unparsedFileName.substring(0, unparsedFileName.lastIndexOf("."));
+            }
         }
-        parsedFileName=parsedFileName.replaceAll("\\s+","");
+        parsedFileName = parsedFileName.replaceAll("\\s+", "");
         //Get the file extension of the source file given the content uri
         ContentResolver contentResolver = context.getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
@@ -82,13 +83,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private File createTemporaryFile(Uri sourceURI, Context context) {
+    private File createTemporaryFile(Uri sourceURI,String fileName ) {
 
 
         //Create a temporary file in cache, open URI as inputstream and output to temporaryFile
-        String fileName = setFileName(sourceURI, MainActivity.this);
+
         File temporaryFile = new File(getCacheDir(), fileName);
-        txtFileName.setText(fileName);
         try {
             InputStream inputStream = getContentResolver().openInputStream(sourceURI);
             OutputStream outputStream = new FileOutputStream(temporaryFile);
@@ -115,13 +115,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void createJobWithFile() {
+    private void createJobWithFile(Uri fileURI, String fileName, final Context context) {
 
-        File theFile = null;
-
+        File theFile;
         CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class);
 
-        theFile = createTemporaryFile(fileURI, MainActivity.this);
+        theFile = createTemporaryFile(fileURI, fileName);
 
         RequestBody requestFile = RequestBody.create(MediaType.parse(theFile.toURI().toString()), theFile);
         MultipartBody.Part body = MultipartBody.Part.createFormData("printfile", theFile.getName(), requestFile);
@@ -130,12 +129,12 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"Success",Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"Fail",Toast.LENGTH_SHORT).show();
                 Log.d("Error", t.getMessage());
             }
         });
@@ -154,6 +153,9 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 42 && resultCode == RESULT_OK) {
             txtFileName.setText(data.getData().getPath());
             fileURI = data.getData();
+
+            String fileName = setFileName(fileURI, MainActivity.this);
+            txtFileName.setText(fileName);
         }
 
 
