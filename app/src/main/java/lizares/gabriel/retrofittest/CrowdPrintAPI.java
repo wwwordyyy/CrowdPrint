@@ -18,14 +18,25 @@ import retrofit2.http.Part;
 public interface CrowdPrintAPI {
     @Multipart
     @POST("addprintjob.php")
-    Call<ResponseBody> createJobWithFile(
+    Call<String> createJobWithFile(
             @Part("jobname") RequestBody jobname,
             @Part MultipartBody.Part file
     );
+
     @FormUrlEncoded
-    @POST("addprintjob.php")
-    Call<ResponseBody> createJob(
-            @Field("jobname") String jobname
+    @POST("register.php")
+    Call<String> registerAccount(
+            @Field("username") String username,
+            @Field("password") String password,
+            @Field("firstName") String firstName,
+            @Field("lastName") String lastName
+    );
+
+    @FormUrlEncoded
+    @POST("login.php")
+    Call<String> loginAccount(
+        @Field("username") String username,
+        @Field("password") String password
     );
 
 

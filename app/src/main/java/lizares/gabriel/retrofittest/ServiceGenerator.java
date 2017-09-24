@@ -11,16 +11,28 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ServiceGenerator {
 
-    //private static final String rootURL = "http://192.168.1.9:8080/crowdprint/";
-    private static final String rootURL = "http://49.149.239.130:8080/crowdprint/";
+    private static String rootURL = "http://192.168.1.14/CrowdPrintServer/";
+    // private static String rootURL = "http://49.149.239.130:8080/crowdprint/";
 
     private static Retrofit.Builder builder = new Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create()).baseUrl(rootURL);
-    private static Retrofit retrofit = builder.build();
+    private static Retrofit retrofit;
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-    public static <S> S CreateService(Class<S> serviceClass) {
-        return retrofit.create(serviceClass);
+
+    public static void changeRootURL(String newRootURL) {
+        rootURL = "http://" + newRootURL + "/CrowdPrintServer/";
+        builder = new Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create()).baseUrl(rootURL);
     }
 
+    public static String getRootURL() {
+        return rootURL;
+    }
+
+
+    public static <S> S CreateService(Class<S> serviceClass) {
+        retrofit = builder.build();
+        return retrofit.create(serviceClass);
+    }
 }

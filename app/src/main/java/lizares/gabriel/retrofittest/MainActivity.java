@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     Button selectFile, uploadFile;
     TextView txtFileName;
 
+    Button setURL;
+    EditText rootIP;
+    TextView currentURL;
 
     Uri fileURI;
 
@@ -43,13 +47,20 @@ public class MainActivity extends AppCompatActivity {
         selectFile = (Button) findViewById(R.id.selectFile);
         uploadFile = (Button) findViewById(R.id.uploadFile);
         txtFileName = (TextView) findViewById(R.id.txtFileName);
+        rootIP = (EditText) findViewById(R.id.rootIP);
+        currentURL = (TextView) findViewById(R.id.currentURL);
+        setURL = (Button) findViewById(R.id.setURL);
 
+        currentURL.setText(ServiceGenerator.getRootURL().toString());
 
         uploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createJobWithFile(fileURI, txtFileName.getText().toString(), MainActivity.this);
-
+                if (txtFileName.getText().toString().matches("")) {
+                    Toast.makeText(MainActivity.this, "Please select a file", Toast.LENGTH_SHORT).show();
+                } else {
+                    createJobWithFile();
+                }
             }
         });
 
@@ -57,7 +68,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 findFile();
+            }
+        });
 
+        setURL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ServiceGenerator.changeRootURL(rootIP.getText().toString());
+                currentURL.setText(ServiceGenerator.getRootURL().toString());
             }
         });
 
@@ -65,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String setFileName(Uri sourceURI, Context context) {
         File temp = new File(sourceURI.getPath());
+
         String unparsedFileName = temp.getName();
         String parsedFileName = unparsedFileName;
         //check if file name has an extension
@@ -83,12 +102,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private File createTemporaryFile(Uri sourceURI,String fileName ) {
+    private File createTemporaryFile(Uri sourceURI, Context context) {
 
 
         //Create a temporary file in cache, open URI as inputstream and output to temporaryFile
-
+        String fileName = setFileName(sourceURI, MainActivity.this);
         File temporaryFile = new File(getCacheDir(), fileName);
+        txtFileName.setText(fileName);
         try {
             InputStream inputStream = getContentResolver().openInputStream(sourceURI);
             OutputStream outputStream = new FileOutputStream(temporaryFile);
@@ -115,29 +135,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void createJobWithFile(Uri fileURI, String fileName, final Context context) {
+    private void createJobWithFile() {
 
-        File theFile;
+        File theFile = null;
+        final String responseString;
         CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class);
 
-        theFile = createTemporaryFile(fileURI, fileName);
+        theFile = createTemporaryFile(fileURI, MainActivity.this);
 
         RequestBody requestFile = RequestBody.create(MediaType.parse(theFile.toURI().toString()), theFile);
         MultipartBody.Part body = MultipartBody.Part.createFormData("printfile", theFile.getName(), requestFile);
         RequestBody theJobName = RequestBody.create(MultipartBody.FORM, theFile.getName());
-        Call<ResponseBody> call = client.createJobWithFile(theJobName, body);
-        call.enqueue(new Callback<ResponseBody>() {
+        Call<String> call = client.createJobWithFile(theJobName, body);
+        call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Toast.makeText(context,"Success",Toast.LENGTH_SHORT).show();
+            public void onResponse(Call<String> call, Response<String> response) {
+               Toast.makeText(MainActivity.this,response.body(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(context,"Fail",Toast.LENGTH_SHORT).show();
-                Log.d("Error", t.getMessage());
+            public void onFailure(Call<String> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                Log.d("Error did not send", ""+t.getMessage());
             }
         });
+
 
     }
 
@@ -153,9 +175,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 42 && resultCode == RESULT_OK) {
             txtFileName.setText(data.getData().getPath());
             fileURI = data.getData();
-
-            String fileName = setFileName(fileURI, MainActivity.this);
-            txtFileName.setText(fileName);
         }
 
 
