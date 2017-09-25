@@ -6,6 +6,17 @@
     android:orientation="vertical"
     tools:context="lizares.gabriel.retrofittest.RegistrationActivity">
 
+    <EditText
+        android:id="@+id/etServerAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btnChangeAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Change Address" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
@@ -17,8 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="Username" />
+        android:hint="Username"
+        android:inputType="textPersonName" />
 
     <TextView
         android:id="@+id/textView6"
@@ -31,8 +42,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPassword"
-        android:hint="Password" />
+        android:hint="Password"
+        android:inputType="textPassword" />
 
     <TextView
         android:id="@+id/textView5"
@@ -45,8 +56,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="First Name" />
+        android:hint="First Name"
+        android:inputType="textPersonName" />
 
     <TextView
         android:id="@+id/textView4"
@@ -59,8 +70,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="Last Name" />
+        android:hint="Last Name"
+        android:inputType="textPersonName" />
 
     <Button
         android:id="@+id/btnSubmit"

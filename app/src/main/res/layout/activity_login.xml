@@ -4,7 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context="lizares.gabriel.retrofittest.Login">
+    tools:context="lizares.gabriel.retrofittest.LoginActivity">
+
+    <EditText
+        android:id="@+id/etServerAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btnChangeAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Change Address" />
 
     <EditText
         android:id="@+id/etUsername"
@@ -13,17 +24,25 @@
         android:hint="Username"
         android:inputType="textPersonName"
         android:text="user1" />
+
     <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/etPassword"
-        android:inputType="text"
-        android:hint="Password"
-        android:text="password1"/>
-    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="text"
+        android:text="password1" />
+
+    <Button
         android:id="@+id/btnLogin"
-        android:text="Login"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login" />
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register" />
 
 </LinearLayout>

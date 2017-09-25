@@ -20,6 +20,9 @@ public interface CrowdPrintAPI {
     @POST("addprintjob.php")
     Call<String> createJobWithFile(
             @Part("jobname") RequestBody jobname,
+            @Part("jobOwner") RequestBody jobOwner,
+            @Part("printStation") RequestBody printStation,
+            @Part("destPrinter") RequestBody destPrinter,
             @Part MultipartBody.Part file
     );
 
@@ -35,8 +38,26 @@ public interface CrowdPrintAPI {
     @FormUrlEncoded
     @POST("login.php")
     Call<String> loginAccount(
-        @Field("username") String username,
-        @Field("password") String password
+            @Field("username") String username,
+            @Field("password") String password
+    );
+
+    @FormUrlEncoded
+    @POST("getUserJobs.php")
+    Call<String> getUserJobs(
+            @Field("jobOwner") String jobOwner
+    );
+
+    @FormUrlEncoded
+    @POST("addload.php")
+    Call<String> addLoad(
+            @Field("jobOwner") String username
+    );
+
+    @FormUrlEncoded
+    @POST("getload.php")
+    Call<String> getLoad(
+            @Field("jobOwner") String username
     );
 
 

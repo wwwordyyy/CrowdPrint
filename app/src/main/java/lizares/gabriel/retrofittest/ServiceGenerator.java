@@ -1,5 +1,7 @@
 package lizares.gabriel.retrofittest;
 
+import android.text.TextUtils;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -31,7 +33,21 @@ public class ServiceGenerator {
     }
 
 
-    public static <S> S CreateService(Class<S> serviceClass) {
+    public static <S> S createService(Class<S> serviceClass) {
+      //  retrofit = builder.build();
+      //  return retrofit.create(serviceClass);
+        return CreateService(serviceClass,null);
+    }
+
+    public static <S> S CreateService(Class<S> serviceClass, final String authToken) {
+        if (!TextUtils.isEmpty(authToken)) {
+            AuthenticationInterceptor interceptor = new AuthenticationInterceptor(authToken);
+            if (!httpClient.interceptors().contains(interceptor)) {
+                httpClient.addInterceptor(interceptor);
+                builder.client(httpClient.build());
+                //retrofit = builder.build();
+            }
+        }
         retrofit = builder.build();
         return retrofit.create(serviceClass);
     }

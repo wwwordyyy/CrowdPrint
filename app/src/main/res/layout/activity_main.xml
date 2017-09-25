@@ -6,11 +6,9 @@
     tools:context="lizares.gabriel.retrofittest.MainActivity">
 
     <LinearLayout
-        android:layout_width="368dp"
-        android:layout_height="495dp"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="6dp"
-        tools:layout_editor_absoluteY="8dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,6 +50,37 @@
 
         </HorizontalScrollView>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Welcome " />
+
+            <TextView
+                android:id="@+id/tvWelcomeUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Your Balance: " />
+
+            <TextView
+                android:id="@+id/tvUserBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+
         <Button
             android:id="@+id/setURL"
             android:layout_width="match_parent"
@@ -63,6 +92,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Select File" />
+
+        <Button
+            android:id="@+id/uploadFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -85,11 +120,17 @@
 
         </LinearLayout>
 
+        <ListView
+            android:id="@+id/lvJobList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"></ListView>
+
         <Button
-            android:id="@+id/uploadFile"
+            android:id="@+id/btnAddBalance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Upload" />
+            android:text="Add Balance" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
