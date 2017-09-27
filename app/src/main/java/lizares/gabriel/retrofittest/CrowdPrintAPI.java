@@ -60,5 +60,19 @@ public interface CrowdPrintAPI {
             @Field("jobOwner") String username
     );
 
+    @FormUrlEncoded
+    @POST("updatefirebasetoken.php")
+    Call<String> updateFirebaseToken(
+            @Field("jobOwner") String username,
+            @Field("firebaseToken") String firebaseToken
+    );
+
+    @FormUrlEncoded
+    @POST("startprint.php")
+    Call<String> startPrint(
+            @Field("jobOwner") String username,
+            @Field("jobKey") String jobKey
+
+    );
 
 }

@@ -2,12 +2,13 @@ package lizares.gabriel.retrofittest;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,21 +20,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     //File uploading and printjob creation
     Button selectFile, uploadFile;
     TextView txtFileName;
+    EditText etDestPrinter;
     Uri fileURI;
 
     //When the servers ip changes
@@ -67,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
     int ACCOUNT_PICKER_RESULT = 50;
     int FIND_FILE_RESULT = 42;
 
+    //FCM receiver
+    BroadcastReceiver receiver;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         selectFile = (Button) findViewById(R.id.selectFile);
         uploadFile = (Button) findViewById(R.id.uploadFile);
         txtFileName = (TextView) findViewById(R.id.txtFileName);
+        etDestPrinter = (EditText) findViewById(R.id.etDestPrinter);
 
         setURL = (Button) findViewById(R.id.setURL);
         rootIP = (EditText) findViewById(R.id.rootIP);
@@ -92,6 +98,33 @@ public class MainActivity extends AppCompatActivity {
         accountPreference = new AccountPreference(this);
         accountManager = AccountManager.get(this);
 
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    Log.d("cpdebug", intent.getStringExtra("action"));
+                    Log.d("cpdebug", intent.getStringExtra("printJobName"));
+                    Log.d("cpdebug", intent.getStringExtra("status"));
+                    String notifAction = intent.getStringExtra("action");
+                    String notifStatus = intent.getStringExtra("status");
+                    String notifJobName = intent.getStringExtra("printJobName");
+                    updateUserJobs();
+                    if (notifAction.equals(CrowdPrintFCMService.FCM_PRINTSTATUSUPDATE)) {
+                        if (notifStatus.equals("canceled")) {
+                            Toast.makeText(context, notifJobName + " has been canceled", Toast.LENGTH_LONG).show();
+                        } else if (notifStatus.equals("completed")) {
+                            Toast.makeText(context, notifJobName + " has finished printing", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+
         //Check if user has logged in
         if (accountPreference.getUsername() != null) { //if previously logged in check if the account is still in account manager
             Account selectedAccount = null;
@@ -101,7 +134,14 @@ public class MainActivity extends AppCompatActivity {
                 if (account.name.equals(username)) {
                     selectedAccount = account;
                     accountName = selectedAccount.name;
-                    accountManager.getAuthToken(selectedAccount, "CROWDPRINT_USER", null, true, new onTokenComplete(printJobListAdapter), null);
+                    authToken = accountManager.peekAuthToken(account, "CROWDPRINT_USER");
+                    printJobListAdapter.setCredentials(accountName, authToken);
+                    updateUserJobs();
+                    getUserBalance();
+                    updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
+
+                    Log.d("cpdebug", authToken);
+
                     break;
                 }
             }
@@ -116,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         tvWelcomeUser.setText(accountName);
 
-        currentURL.setText(ServiceGenerator.getRootURL().toString());
+        currentURL.setText(ServiceGenerator.getRootURL());
         btnAddBalance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -130,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 if (txtFileName.getText().toString().matches("")) {
                     Toast.makeText(MainActivity.this, "Please select a file", Toast.LENGTH_SHORT).show();
                 } else {
-                    createJobWithFile(printJobListAdapter);
+                    createJobWithFile(etDestPrinter.getText().toString());
                 }
             }
         });
@@ -146,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ServiceGenerator.changeRootURL(rootIP.getText().toString());
-                currentURL.setText(ServiceGenerator.getRootURL().toString());
+                currentURL.setText(ServiceGenerator.getRootURL());
             }
         });
 
@@ -203,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void createJobWithFile(final PrintJobListAdapter printJobListAdapter) {
+    private void createJobWithFile(String destinationPrinter) {
 
         final File theFile;
         //CrowdPrintAPI client = ServiceGenerator.createService(CrowdPrintAPI.class);
@@ -218,20 +258,19 @@ public class MainActivity extends AppCompatActivity {
         RequestBody theJobName = RequestBody.create(MultipartBody.FORM, theFile.getName());
         RequestBody jobOwner = RequestBody.create(MultipartBody.FORM, accountName);
         RequestBody printStation = RequestBody.create(MultipartBody.FORM, "Station1");
-        RequestBody destPrinter = RequestBody.create(MultipartBody.FORM, "Printer1");
+        RequestBody destPrinter = RequestBody.create(MultipartBody.FORM, destinationPrinter);
 
         Call<String> call = client.createJobWithFile(theJobName, jobOwner, printStation, destPrinter, body);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                Toast.makeText(MainActivity.this, response.body(), Toast.LENGTH_SHORT).show();
                 updateUserJobs();
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
-                Log.d("Error did not send", "" + t.getMessage());
+                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("cpdebug", "Error did not send: " + t.getMessage());
             }
         });
 
@@ -255,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
             accountPreference.setUsername(accountName);
             Account account = new Account(accountName, "com.gab.CrowdPrint");
             authToken = accountManager.peekAuthToken(account, "CROWDPRINT_USER");
+            printJobListAdapter.setCredentials(accountName, authToken);
             updateUserJobs();
             getUserBalance();
             Log.d("cpdebug", authToken);
@@ -262,24 +302,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class onTokenComplete implements AccountManagerCallback<Bundle> {
-        private PrintJobListAdapter printJobListAdapter;
-
-        public onTokenComplete(PrintJobListAdapter printJobListAdapter) {
-            this.printJobListAdapter = printJobListAdapter;
-        }
-
-        @Override
-        public void run(AccountManagerFuture<Bundle> accountManagerFuture) {
-            try {
-                authToken = accountManagerFuture.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-                updateUserJobs();
-                getUserBalance();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public void updateUserJobs() {
         CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
@@ -293,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                     for (int index = 0; index < arrayJobInfo.length(); index++) {
                         JSONObject jobInfo = arrayJobInfo.getJSONObject(index);
                         printJobListAdapter.add(new PrintJobInfo(jobInfo.getString("pdfJobName"),
-                                jobInfo.getString("jobId"), jobInfo.getString("price")));
+                                jobInfo.getString("jobId"), jobInfo.getString("price"), jobInfo.getString("status")));
                         printJobListAdapter.notifyDataSetChanged();
                         Log.d("ARRAYJSON", arrayJobInfo.getJSONObject(index).toString());
                     }
@@ -326,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     public void getUserBalance() {
         CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
         Call<String> call = client.getLoad(accountName);
@@ -340,6 +363,46 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    public void updateUserFirebaseToken(String firebaseToken) {
+        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
+        Call<String> call = client.updateFirebaseToken(accountName, firebaseToken);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                Log.d("cpdebug", response.body());
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.d("cpdebug", t.getMessage());
+            }
+
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(getBaseContext()).registerReceiver((receiver),
+                new IntentFilter(CrowdPrintFCMService.FCM_NOTIFICATION)
+        );
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getBaseContext()).unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUserJobs();
+        getUserBalance();
+        tvWelcomeUser.setText(accountName);
 
     }
 }

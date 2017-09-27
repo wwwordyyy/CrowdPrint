@@ -8,12 +8,24 @@ public class PrintJobInfo {
     private String jobName;
     private String jobKey;
     private String jobPrice;
+    private String jobStatus;
 
-    public PrintJobInfo(String jobName, String jobKey, String jobPrice) {
+    public PrintJobInfo(String jobName, String jobKey, String jobPrice, String jobStatus) {
         this.jobName = jobName;
         this.jobKey = jobKey;
+
         this.jobPrice = jobPrice;
+        this.jobStatus = jobStatus;
     }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
+    }
+
 
     public String getJobName() {
         return jobName;

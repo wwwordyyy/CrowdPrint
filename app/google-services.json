@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "323831393638",
+    "firebase_url": "https://retrofittest-7d8d7.firebaseio.com",
+    "project_id": "retrofittest-7d8d7",
+    "storage_bucket": "retrofittest-7d8d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:323831393638:android:79e4e6f1575dd8d9",
+        "android_client_info": {
+          "package_name": "lizares.gabriel.retrofittest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "323831393638-hj3ic3iib34q3n70vpa2cmtlgp5jjuu4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "lizares.gabriel.retrofittest",
+            "certificate_hash": "969677b9ca49efe6c04d0e5e5e3af215be6f7a57"
+          }
+        },
+        {
+          "client_id": "323831393638-vha2q67ljulufs17h7vv05dp4mht2q78.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnF84eyEx11GxdYyBQhT5zFQmR5bxbZio"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "323831393638-vha2q67ljulufs17h7vv05dp4mht2q78.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
