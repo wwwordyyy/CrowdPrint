@@ -40,12 +40,6 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    //File uploading and printjob creation
-    Button selectFile, uploadFile;
-    TextView txtFileName;
-    EditText etDestPrinter;
-    Uri fileURI;
-
     //When the servers ip changes
     Button setURL;
     EditText rootIP;
@@ -54,8 +48,7 @@ public class MainActivity extends AppCompatActivity {
     //User info for login and validation
     AccountManager accountManager;
     AccountPreference accountPreference;
-    String accountName = null;
-    String authToken = null;
+    UserInformation userInformation = new UserInformation();
 
     //Display username and Balance
     TextView tvWelcomeUser;
@@ -66,21 +59,17 @@ public class MainActivity extends AppCompatActivity {
     ListView lvJobList;
     PrintJobListAdapter printJobListAdapter = null;
     int ACCOUNT_PICKER_RESULT = 50;
-    int FIND_FILE_RESULT = 42;
+    private static final int CREATE_JOB_ACTIVITY_RESULT = 51;
 
     //FCM receiver
     BroadcastReceiver receiver;
 
+    Button btnCreatePrintJob;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        selectFile = (Button) findViewById(R.id.selectFile);
-        uploadFile = (Button) findViewById(R.id.uploadFile);
-        txtFileName = (TextView) findViewById(R.id.txtFileName);
-        etDestPrinter = (EditText) findViewById(R.id.etDestPrinter);
 
         setURL = (Button) findViewById(R.id.setURL);
         rootIP = (EditText) findViewById(R.id.rootIP);
@@ -98,13 +87,12 @@ public class MainActivity extends AppCompatActivity {
         accountPreference = new AccountPreference(this);
         accountManager = AccountManager.get(this);
 
+        btnCreatePrintJob = (Button) findViewById(R.id.btnCreatePrintJob);
+
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 try {
-                    Log.d("cpdebug", intent.getStringExtra("action"));
-                    Log.d("cpdebug", intent.getStringExtra("printJobName"));
-                    Log.d("cpdebug", intent.getStringExtra("status"));
                     String notifAction = intent.getStringExtra("action");
                     String notifStatus = intent.getStringExtra("status");
                     String notifJobName = intent.getStringExtra("printJobName");
@@ -116,8 +104,6 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(context, notifJobName + " has finished printing", Toast.LENGTH_LONG).show();
                         }
                     }
-
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -133,14 +119,14 @@ public class MainActivity extends AppCompatActivity {
             for (Account account : accounts) {
                 if (account.name.equals(username)) {
                     selectedAccount = account;
-                    accountName = selectedAccount.name;
-                    authToken = accountManager.peekAuthToken(account, "CROWDPRINT_USER");
-                    printJobListAdapter.setCredentials(accountName, authToken);
+                    userInformation.setUsername(selectedAccount.name);
+                    userInformation.setAuthToken(accountManager.peekAuthToken(account,"CROWDPRINT_USER"));
+                    printJobListAdapter.setCredentials(userInformation.getUsername(), userInformation.getAuthToken());
                     updateUserJobs();
                     getUserBalance();
                     updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
 
-                    Log.d("cpdebug", authToken);
+                    Log.d("cpdebug", userInformation.getAuthToken());
 
                     break;
                 }
@@ -154,31 +140,13 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(accountPicker, ACCOUNT_PICKER_RESULT);
         }
 
-        tvWelcomeUser.setText(accountName);
+        tvWelcomeUser.setText(userInformation.getUsername());
 
         currentURL.setText(ServiceGenerator.getRootURL());
         btnAddBalance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 updateUserBalance();
-            }
-        });
-
-        uploadFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (txtFileName.getText().toString().matches("")) {
-                    Toast.makeText(MainActivity.this, "Please select a file", Toast.LENGTH_SHORT).show();
-                } else {
-                    createJobWithFile(etDestPrinter.getText().toString());
-                }
-            }
-        });
-
-        selectFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                findFile();
             }
         });
 
@@ -190,122 +158,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    private String setFileName(Uri sourceURI, Context context) {
-        File temp = new File(sourceURI.getPath());
-        String unparsedFileName = temp.getName();
-        String parsedFileName = unparsedFileName;
-        //check if file name has an extension
-        if (unparsedFileName.contains(".")) {
-            if (unparsedFileName.lastIndexOf(".") != unparsedFileName.length() - 1) {
-                parsedFileName = unparsedFileName.substring(0, unparsedFileName.lastIndexOf("."));
-            }
-        }
-        parsedFileName = parsedFileName.replaceAll("\\s+", "");
-        //Get the file extension of the source file given the content uri
-        ContentResolver contentResolver = context.getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        String type = mime.getExtensionFromMimeType(contentResolver.getType(sourceURI));
-
-        return parsedFileName + "." + type;
-    }
-
-
-    private File createTemporaryFile(Uri sourceURI, String fileName) {
-
-
-        //Create a temporary file in cache, open URI as inputstream and output to temporaryFile
-        File temporaryFile = new File(getCacheDir(), fileName);
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(sourceURI);
-            OutputStream outputStream = new FileOutputStream(temporaryFile);
-            try {
-                try {
-                    byte[] buffer = new byte[4 * 1024];
-                    int read;
-                    while ((read = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, read);
-                    }
-                    outputStream.flush();
-                } finally {
-                    outputStream.close();
-                }
-            } finally {
-                inputStream.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        return temporaryFile;
-    }
-
-
-    private void createJobWithFile(String destinationPrinter) {
-
-        final File theFile;
-        //CrowdPrintAPI client = ServiceGenerator.createService(CrowdPrintAPI.class);
-        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
-        String fileName = setFileName(fileURI, MainActivity.this);
-        theFile = createTemporaryFile(fileURI, fileName);
-        txtFileName.setText(theFile.getName());
-
-        RequestBody requestFile = RequestBody.create(MediaType.parse(theFile.toURI().toString()), theFile);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("printfile", theFile.getName(), requestFile);
-
-        RequestBody theJobName = RequestBody.create(MultipartBody.FORM, theFile.getName());
-        RequestBody jobOwner = RequestBody.create(MultipartBody.FORM, accountName);
-        RequestBody printStation = RequestBody.create(MultipartBody.FORM, "Station1");
-        RequestBody destPrinter = RequestBody.create(MultipartBody.FORM, destinationPrinter);
-
-        Call<String> call = client.createJobWithFile(theJobName, jobOwner, printStation, destPrinter, body);
-        call.enqueue(new Callback<String>() {
+        btnCreatePrintJob.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                updateUserJobs();
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.d("cpdebug", "Error did not send: " + t.getMessage());
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, CreatePrintJobActivity.class);
+                intent.putExtra("userInformation",userInformation);
+                startActivityForResult(intent,CREATE_JOB_ACTIVITY_RESULT);
             }
         });
 
-
     }
 
-    private void findFile() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        startActivityForResult(intent, FIND_FILE_RESULT);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == FIND_FILE_RESULT && resultCode == RESULT_OK) {
-            txtFileName.setText(data.getData().getPath());
-            fileURI = data.getData();
-        } else if (requestCode == ACCOUNT_PICKER_RESULT && resultCode == RESULT_OK) {
-            accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-            accountPreference.setUsername(accountName);
-            Account account = new Account(accountName, "com.gab.CrowdPrint");
-            authToken = accountManager.peekAuthToken(account, "CROWDPRINT_USER");
-            printJobListAdapter.setCredentials(accountName, authToken);
+        if (requestCode == ACCOUNT_PICKER_RESULT && resultCode == RESULT_OK) {
+            userInformation.setUsername(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+            accountPreference.setUsername(userInformation.getUsername());
+            Account account = new Account(userInformation.getUsername(), "com.gab.CrowdPrint");
+            userInformation.setAuthToken(accountManager.peekAuthToken(account,"CROWDPRINT_USER"));
+            printJobListAdapter.setCredentials(userInformation.getUsername(), userInformation.getAuthToken());
             updateUserJobs();
             getUserBalance();
-            Log.d("cpdebug", authToken);
+            updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
+            Log.d("cpdebug", userInformation.getAuthToken());
 
+        } else if(requestCode == CREATE_JOB_ACTIVITY_RESULT && resultCode == RESULT_OK){
+            updateUserJobs();
+            Toast.makeText(MainActivity.this,"Job Created Successfully",Toast.LENGTH_SHORT).show();
         }
     }
 
 
     public void updateUserJobs() {
-        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
-        Call<String> call = client.getUserJobs(accountName);
+        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+        Call<String> call = client.getUserJobs(userInformation.getUsername());
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -332,8 +219,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateUserBalance() {
-        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
-        Call<String> call = client.addLoad(accountName);
+        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+        Call<String> call = client.addLoad(userInformation.getUsername());
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -345,13 +232,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
-
     public void getUserBalance() {
-        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
-        Call<String> call = client.getLoad(accountName);
+        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+        Call<String> call = client.getLoad(userInformation.getUsername());
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -367,8 +252,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateUserFirebaseToken(String firebaseToken) {
-        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, authToken);
-        Call<String> call = client.updateFirebaseToken(accountName, firebaseToken);
+        CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+        Call<String> call = client.updateFirebaseToken(userInformation.getUsername(), firebaseToken);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -402,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         updateUserJobs();
         getUserBalance();
-        tvWelcomeUser.setText(accountName);
+        tvWelcomeUser.setText(userInformation.getUsername());
 
     }
 }
