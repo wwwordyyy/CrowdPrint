@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.UserAuthentication;
 
 import android.accounts.AccountManager;
 import android.content.Context;

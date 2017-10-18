@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.MainView;
 
 /**
  * Created by Parcival on 9/24/2017.

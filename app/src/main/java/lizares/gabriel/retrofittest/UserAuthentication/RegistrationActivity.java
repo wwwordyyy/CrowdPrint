@@ -1,14 +1,15 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.UserAuthentication;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
-import okhttp3.ResponseBody;
+import lizares.gabriel.retrofittest.R;
+import lizares.gabriel.retrofittest.Retrofit.CrowdPrintAPI;
+import lizares.gabriel.retrofittest.Retrofit.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

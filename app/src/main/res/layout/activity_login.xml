@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context="lizares.gabriel.retrofittest.LoginActivity">
+    tools:context="lizares.gabriel.retrofittest.UserAuthentication.LoginActivity">
 
     <EditText
         android:id="@+id/etServerAddress"

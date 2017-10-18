@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.CreatePrintJobView;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -13,6 +13,10 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import lizares.gabriel.retrofittest.R;
+import lizares.gabriel.retrofittest.Retrofit.CrowdPrintAPI;
+import lizares.gabriel.retrofittest.Retrofit.ServiceGenerator;
+import lizares.gabriel.retrofittest.UserAuthentication.UserInformation;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -22,15 +26,17 @@ import retrofit2.Response;
 
 public class CreatePrintJobActivity extends AppCompatActivity {
 
-    Button btnSelectFile, btnCreate;
+    Button btnSelectFile, btnSelectStation;
     TextView tvFileName;
-    Spinner spPrintStation, spPrinter;
     FileUtilities fileUtilities = new FileUtilities(CreatePrintJobActivity.this);
     UserInformation userInformation;
+    CrowdPrintAPI client;
 
-    CrowdPrintAPI client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+    PrintJobSettings printJobSettings;
+
 
     private static final int SELECT_FILE_RESULT = 50;
+    private static final int SELECT_PRINTER_RESULT = 51;
     private final String TAG = "cpCreateJobAct";
 
     @Override
@@ -39,13 +45,14 @@ public class CreatePrintJobActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_print_job);
 
         userInformation = (UserInformation) getIntent().getSerializableExtra("userInformation");
-        Log.d(TAG,userInformation.getUsername() +" "+userInformation.getAuthToken());
-        btnSelectFile = (Button) findViewById(R.id.btnSelectFile);
-        btnCreate = (Button) findViewById(R.id.btnCreate);
-        tvFileName = (TextView) findViewById(R.id.tvFileName);
-        spPrintStation = (Spinner) findViewById(R.id.spPrintStation);
-        spPrinter = (Spinner) findViewById(R.id.spPrinter);
+        client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
 
+        Log.d(TAG, userInformation.getUsername() + " " + userInformation.getAuthToken());
+        btnSelectFile = (Button) findViewById(R.id.btnSelectFile);
+        btnSelectStation = (Button) findViewById(R.id.btnSelectStation);
+        tvFileName = (TextView) findViewById(R.id.tvFileName);
+
+        printJobSettings = new PrintJobSettings();
 
 
         btnSelectFile.setOnClickListener(new View.OnClickListener() {
@@ -55,10 +62,18 @@ public class CreatePrintJobActivity extends AppCompatActivity {
             }
         });
 
-        btnCreate.setOnClickListener(new View.OnClickListener() {
+        btnSelectStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createJob();
+                if(printJobSettings.getJobFile()!=null) {
+                    Intent intent = new Intent(CreatePrintJobActivity.this, SelectStationActivity.class);
+                    intent.putExtra("userInformation", userInformation);
+                    intent.putExtra("printJobSettings", printJobSettings);
+                    startActivityForResult(intent, SELECT_PRINTER_RESULT);
+                }else{
+                    Toast.makeText(CreatePrintJobActivity.this,"Please select a file",Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
@@ -67,7 +82,7 @@ public class CreatePrintJobActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_FILE_RESULT && resultCode == RESULT_OK) {
             String fileName = fileUtilities.setFileName(data.getData());
-            fileUtilities.createTemporaryFile(data.getData(),fileName);
+            printJobSettings.setJobFile(fileUtilities.createTemporaryFile(data.getData(), fileName));
             tvFileName.setText(fileName);
         }
     }
@@ -78,36 +93,6 @@ public class CreatePrintJobActivity extends AppCompatActivity {
         intent.setType("*/*");
         startActivityForResult(intent, SELECT_FILE_RESULT);
     }
-
-    public void createJob(){
-        File theFile = fileUtilities.getTempFile();
-
-        RequestBody requestFile = RequestBody.create(MediaType.parse(theFile.toURI().toString()), theFile);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("printFile", theFile.getName(), requestFile);
-
-        RequestBody theJobName = RequestBody.create(MultipartBody.FORM, theFile.getName());
-        RequestBody jobOwner = RequestBody.create(MultipartBody.FORM, userInformation.getUsername());
-        RequestBody printStation = RequestBody.create(MultipartBody.FORM, "Station3");
-        RequestBody destPrinter = RequestBody.create(MultipartBody.FORM, "hpprinter");
-
-        Call<String> call = client.createJobWithFile(theJobName, jobOwner, printStation, destPrinter, body);
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
-                Log.d(TAG, "Successful: " + response);
-
-                setResult(RESULT_OK);
-                finish();
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
-                Toast.makeText(CreatePrintJobActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Error did not send: " + t.getMessage());
-            }
-        });
-    }
-
 
 
 

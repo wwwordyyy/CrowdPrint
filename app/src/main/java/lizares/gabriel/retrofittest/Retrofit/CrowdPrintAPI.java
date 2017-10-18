@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.Retrofit;
 
 
 import okhttp3.MultipartBody;
@@ -73,6 +73,20 @@ public interface CrowdPrintAPI {
             @Field("jobOwner") String username,
             @Field("jobKey") String jobKey
 
+    );
+
+    @FormUrlEncoded
+    @POST("getstationlist.php")
+    Call<String> getStationList(
+            @Field("jobOwner") String username
+    );
+
+    @FormUrlEncoded
+    @POST("getprinterlist.php")
+    Call<String> getStationPrinterList(
+            @Field("jobOwner") String username,
+            @Field("stationOwner") String stationOwner,
+            @Field("stationName") String stationName
     );
 
 }

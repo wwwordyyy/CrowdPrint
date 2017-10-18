@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.UserAuthentication;
 
 import java.io.IOException;
 

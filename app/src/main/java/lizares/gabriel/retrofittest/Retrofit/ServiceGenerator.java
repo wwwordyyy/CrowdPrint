@@ -1,7 +1,8 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.Retrofit;
 
 import android.text.TextUtils;
 
+import lizares.gabriel.retrofittest.UserAuthentication.AuthenticationInterceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

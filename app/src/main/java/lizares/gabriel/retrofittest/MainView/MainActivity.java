@@ -1,19 +1,16 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.MainView;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -25,21 +22,21 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
+import lizares.gabriel.retrofittest.CreatePrintJobView.CreatePrintJobActivity;
+import lizares.gabriel.retrofittest.Firebase.CrowdPrintFCMService;
+import lizares.gabriel.retrofittest.R;
+import lizares.gabriel.retrofittest.Retrofit.CrowdPrintAPI;
+import lizares.gabriel.retrofittest.Retrofit.ServiceGenerator;
+import lizares.gabriel.retrofittest.UserAuthentication.AccountPreference;
+import lizares.gabriel.retrofittest.UserAuthentication.UserInformation;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static final String TAG = "MainActivity";
     //When the servers ip changes
     Button setURL;
     EditText rootIP;
@@ -162,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, CreatePrintJobActivity.class);
+                Log.d(TAG,"User information: "+userInformation.getUsername()+" "+userInformation.getAuthToken());
                 intent.putExtra("userInformation",userInformation);
                 startActivityForResult(intent,CREATE_JOB_ACTIVITY_RESULT);
             }

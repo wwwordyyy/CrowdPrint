@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context="lizares.gabriel.retrofittest.CreatePrintJobActivity">
-
-
+    tools:context="lizares.gabriel.retrofittest.CreatePrintJobView.CreatePrintJobActivity">
     <Button
         android:id="@+id/btnSelectFile"
         android:layout_width="match_parent"
@@ -19,24 +17,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="File Name" />
+        android:text="No File Selected" />
 
-    <Spinner
-        android:id="@+id/spPrintStation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-
-    <Spinner
-        android:id="@+id/spPrinter"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-
-    <Button
-        android:id="@+id/btnCreate"
+    <TextView
+        android:id="@+id/tvSelectedStation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Create" />
+        android:text="No Station Selected" />
+
+    <TextView
+        android:id="@+id/tvSelectedPrinter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="No Printer Selected" />
+
+    <Button
+        android:id="@+id/btnSelectStation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Select Station" />
+
 </android.widget.LinearLayout>

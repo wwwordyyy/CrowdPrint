@@ -1,4 +1,4 @@
-package lizares.gabriel.retrofittest;
+package lizares.gabriel.retrofittest.MainView;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -14,6 +14,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import lizares.gabriel.retrofittest.R;
+import lizares.gabriel.retrofittest.Retrofit.CrowdPrintAPI;
+import lizares.gabriel.retrofittest.Retrofit.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
