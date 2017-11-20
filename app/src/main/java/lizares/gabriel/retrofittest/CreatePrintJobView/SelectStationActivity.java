@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -77,7 +78,8 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(LOCATION_PERMS, 41);
             return;
         }
@@ -93,6 +95,8 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
             LatLng currentLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
             // marker = mMap.addMarker(new MarkerOptions().position(currentLocation));
+        } else{
+            Toast.makeText(SelectStationActivity.this,"Searching for location", Toast.LENGTH_SHORT).show();
         }
 
         LocationListener locationListener = new LocationListener() {

@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     Button setURL;
     EditText rootIP;
     TextView currentURL;
-
+    Boolean connectedToServer = false;
     //User info for login and validation
     AccountManager accountManager;
     AccountPreference accountPreference;
@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
     //FCM receiver
     BroadcastReceiver receiver;
-
     Button btnCreatePrintJob;
 
     @Override
@@ -109,33 +108,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         //Check if user has logged in
-        if (accountPreference.getUsername() != null) { //if previously logged in check if the account is still in account manager
-            Account selectedAccount = null;
-            String username = accountPreference.getUsername();
-            Account[] accounts = accountManager.getAccountsByType("com.gab.CrowdPrint");
-            for (Account account : accounts) {
-                if (account.name.equals(username)) {
-                    selectedAccount = account;
-                    userInformation.setUsername(selectedAccount.name);
-                    userInformation.setAuthToken(accountManager.peekAuthToken(account,"CROWDPRINT_USER"));
-                    printJobListAdapter.setCredentials(userInformation.getUsername(), userInformation.getAuthToken());
-                    updateUserJobs();
-                    getUserBalance();
-                    updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
-
-                    Log.d("cpdebug", userInformation.getAuthToken());
-
-                    break;
-                }
-            }
-            if (selectedAccount == null) { //if not in the account manager have user add an account
-                Intent accountPicker = accountManager.newChooseAccountIntent(null, null, new String[]{"com.gab.CrowdPrint"}, null, null, null, null);
-                startActivityForResult(accountPicker, ACCOUNT_PICKER_RESULT);
-            }
-        } else { //If no account was logged in before have user add an account
-            Intent accountPicker = accountManager.newChooseAccountIntent(null, null, new String[]{"com.gab.CrowdPrint"}, null, null, null, null);
-            startActivityForResult(accountPicker, ACCOUNT_PICKER_RESULT);
-        }
+        authenticateUser();
 
         tvWelcomeUser.setText(userInformation.getUsername());
 
@@ -152,16 +125,32 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 ServiceGenerator.changeRootURL(rootIP.getText().toString());
                 currentURL.setText(ServiceGenerator.getRootURL());
+
+                updateUserJobs();
+                if (connectedToServer) {
+                    Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         btnCreatePrintJob.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CreatePrintJobActivity.class);
-                Log.d(TAG,"User information: "+userInformation.getUsername()+" "+userInformation.getAuthToken());
-                intent.putExtra("userInformation",userInformation);
-                startActivityForResult(intent,CREATE_JOB_ACTIVITY_RESULT);
+                if (connectedToServer) {
+                    Intent intent = new Intent(MainActivity.this, CreatePrintJobActivity.class);
+                    Log.d(TAG, "User information: " + userInformation.getUsername() + " " + userInformation.getAuthToken());
+                    intent.putExtra("userInformation", userInformation);
+                    startActivityForResult(intent, CREATE_JOB_ACTIVITY_RESULT);
+                } else {
+                    Toast.makeText(MainActivity.this, "Cannot connect to server. Trying to reconnect.", Toast.LENGTH_SHORT).show();
+                    //check if connected again
+                    updateUserJobs();
+                    if (connectedToServer) {
+                        Toast.makeText(MainActivity.this, "Connection Established", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
 
@@ -174,16 +163,16 @@ public class MainActivity extends AppCompatActivity {
             userInformation.setUsername(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
             accountPreference.setUsername(userInformation.getUsername());
             Account account = new Account(userInformation.getUsername(), "com.gab.CrowdPrint");
-            userInformation.setAuthToken(accountManager.peekAuthToken(account,"CROWDPRINT_USER"));
+            userInformation.setAuthToken(accountManager.peekAuthToken(account, "CROWDPRINT_USER"));
             printJobListAdapter.setCredentials(userInformation.getUsername(), userInformation.getAuthToken());
             updateUserJobs();
             getUserBalance();
             updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
             Log.d("cpdebug", userInformation.getAuthToken());
 
-        } else if(requestCode == CREATE_JOB_ACTIVITY_RESULT && resultCode == RESULT_OK){
+        } else if (requestCode == CREATE_JOB_ACTIVITY_RESULT && resultCode == RESULT_OK) {
             updateUserJobs();
-            Toast.makeText(MainActivity.this,"Job Created Successfully",Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Job Created Successfully", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -194,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                connectedToServer = true;
                 try {
                     printJobListAdapter.clear();
                     JSONArray arrayJobInfo = new JSONArray(response.body());
@@ -206,12 +196,18 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                Log.d(TAG, t.toString());
+                String errorMsg = t.getMessage();
+                if (errorMsg.contains("Failed to connect to")) {
+                    Toast.makeText(MainActivity.this, "Cannot connect to server", Toast.LENGTH_SHORT).show();
+                    connectedToServer = false;
+                }
             }
         });
     }
@@ -243,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
             }
         });
 
@@ -264,6 +259,35 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+    public void authenticateUser() {
+        if (accountPreference.getUsername() != null) { //if previously logged in check if the account is still in account manager
+            Account selectedAccount = null;
+            String username = accountPreference.getUsername();
+            Account[] accounts = accountManager.getAccountsByType("com.gab.CrowdPrint");
+            for (Account account : accounts) {
+                if (account.name.equals(username)) {
+                    selectedAccount = account;
+                    userInformation.setUsername(selectedAccount.name);
+                    userInformation.setAuthToken(accountManager.peekAuthToken(account, "CROWDPRINT_USER"));
+                    printJobListAdapter.setCredentials(userInformation.getUsername(), userInformation.getAuthToken());
+                    updateUserJobs();
+                    getUserBalance();
+                    updateUserFirebaseToken(FirebaseInstanceId.getInstance().getToken());
+
+                    Log.d("cpdebug", userInformation.getAuthToken());
+                    break;
+                }
+            }
+            if (selectedAccount == null) { //if not in the account manager have user add an account
+                Intent accountPicker = accountManager.newChooseAccountIntent(null, null, new String[]{"com.gab.CrowdPrint"}, null, null, null, null);
+                startActivityForResult(accountPicker, ACCOUNT_PICKER_RESULT);
+            }
+        } else { //If no account was logged in before have user add an account
+            Intent accountPicker = accountManager.newChooseAccountIntent(null, null, new String[]{"com.gab.CrowdPrint"}, null, null, null, null);
+            startActivityForResult(accountPicker, ACCOUNT_PICKER_RESULT);
+        }
     }
 
     @Override
