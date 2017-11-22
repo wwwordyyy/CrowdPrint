@@ -27,7 +27,7 @@ import retrofit2.Response;
 
 public class FinalizeJobActivity extends AppCompatActivity {
     private static final String TAG = "FinalizeJobActivity";
-    TextView tvStationName,tvPrinterName,tvFileName;
+    TextView tvStationName,tvPrinterName,tvFileName,tvPageSize,tvInkType;
     Button btnCreateJob;
     PrintJobSettings printJobSettings;
     UserInformation userInformation;
@@ -44,15 +44,21 @@ public class FinalizeJobActivity extends AppCompatActivity {
         tvStationName = (TextView) findViewById(R.id.tvStationName);
         tvPrinterName =(TextView) findViewById(R.id.tvPrinterName);
         tvFileName = (TextView) findViewById(R.id.tvFileName);
+        tvPageSize = (TextView) findViewById(R.id.tvPageSize);
+        tvInkType = (TextView) findViewById(R.id.tvInkType);
         btnCreateJob = (Button) findViewById(R.id.btnCreateJob);
 
         String fileName = printJobSettings.getJobFile().getName();
         String stationName = printJobSettings.getStationName();
         String printerName = printJobSettings.getPrinterName();
+        String pageSize = printJobSettings.getPageSize();
+        String inkType = printJobSettings.getInkType();
 
         tvFileName.setText(fileName);
         tvStationName.setText(stationName);
         tvPrinterName.setText(printerName);
+        tvPageSize.setText(pageSize);
+        tvInkType.setText(inkType);
 
         btnCreateJob.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,14 +71,18 @@ public class FinalizeJobActivity extends AppCompatActivity {
     public void createJob(File theFile, String stationName, String printerName) {
 
         RequestBody requestFile = RequestBody.create(MediaType.parse(theFile.toURI().toString()), theFile);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("printFile", theFile.getName(), requestFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("printfile", theFile.getName(), requestFile);
 
         RequestBody theJobName = RequestBody.create(MultipartBody.FORM, theFile.getName());
         RequestBody jobOwner = RequestBody.create(MultipartBody.FORM, userInformation.getUsername());
         RequestBody printStation = RequestBody.create(MultipartBody.FORM, stationName);
         RequestBody destPrinter = RequestBody.create(MultipartBody.FORM, printerName);
+        RequestBody pageDimensionX = RequestBody.create(MultipartBody.FORM, Float.toString(printJobSettings.getPageDimensions()[0]));
+        RequestBody pageDimensionY = RequestBody.create(MultipartBody.FORM, Float.toString(printJobSettings.getPageDimensions()[1]));
+        RequestBody inkType = RequestBody.create(MultipartBody.FORM, printJobSettings.getInkType());
 
-        Call<String> call = client.createJobWithFile(theJobName, jobOwner, printStation, destPrinter, body);
+        Call<String> call = client.createJobWithFile(theJobName, jobOwner, printStation, destPrinter,
+                pageDimensionX,pageDimensionY,inkType, body);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

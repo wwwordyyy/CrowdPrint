@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Created by Parcival on 10/13/2017.
  */
 
-public class PrintStationInfo implements Serializable{
+public class PrintStationInfo implements Serializable {
     private static final String TAG = "PrintStationInfo";
 
     private String stationName;
@@ -47,8 +47,12 @@ public class PrintStationInfo implements Serializable{
 
                 String printerName = printerInfo.getString("printerName");
                 String printerModel = printerInfo.getString("printerModel");
-                StationPrinterInfo stationPrinterInfo = new StationPrinterInfo(printerName, printerModel);
-                this.stationPrinterList.add(stationPrinterInfo);
+                String pageSize = printerInfo.getString("pageSize");
+                String inkType = printerInfo.getString("inkType");
+                if (!printerName.equals("PDF")) {
+                    StationPrinterInfo stationPrinterInfo = new StationPrinterInfo(printerName, printerModel, pageSize, inkType);
+                    this.stationPrinterList.add(stationPrinterInfo);
+                }
             }
 
         } catch (JSONException e) {

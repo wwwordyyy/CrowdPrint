@@ -22,7 +22,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class ServiceGenerator {
 
-    private static String rootURL = "https://192.168.1.16/CrowdPrintServer/";
+    private static String rootURL = "https://192.168.1.15/CrowdPrintServer/";
     // private static String rootURL = "http://49.149.239.130:8080/crowdprint/";
     private static OkHttpClient okHttpClient = unsafeClient("");
     private static Retrofit.Builder builder = new Retrofit.Builder().baseUrl(rootURL).addConverterFactory(ScalarsConverterFactory.create())
@@ -48,8 +48,11 @@ public class ServiceGenerator {
         return CreateService(serviceClass,null);
     }
 
-    public static <S> S CreateService(Class<S> serviceClass, final String authToken) {
-        if (!TextUtils.isEmpty(authToken)) {
+    public static <S> S CreateService(Class<S> serviceClass, String authToken) {
+       // if (!TextUtils.isEmpty(authToken)) {
+        if(authToken == null){
+            authToken="";
+        }
             OkHttpClient hClient = unsafeClient(authToken);
             builder.client(hClient);
             /*
@@ -60,7 +63,7 @@ public class ServiceGenerator {
                 //retrofit = builder.build();
             }
             */
-        }
+      //  }
         retrofit = builder.build();
         return retrofit.create(serviceClass);
     }

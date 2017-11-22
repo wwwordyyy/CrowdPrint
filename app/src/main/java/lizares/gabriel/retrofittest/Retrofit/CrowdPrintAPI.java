@@ -23,6 +23,9 @@ public interface CrowdPrintAPI {
             @Part("jobOwner") RequestBody jobOwner,
             @Part("printStation") RequestBody printStation,
             @Part("destPrinter") RequestBody destPrinter,
+            @Part("pageDimensionX") RequestBody pageDimensionX,
+            @Part("pageDimensionY") RequestBody pageDimensionY,
+            @Part("inkType") RequestBody inkType,
             @Part MultipartBody.Part file
     );
 
@@ -87,6 +90,14 @@ public interface CrowdPrintAPI {
             @Field("jobOwner") String username,
             @Field("stationOwner") String stationOwner,
             @Field("stationName") String stationName
+    );
+
+    @FormUrlEncoded
+    @POST("getPrinterSettings.php")
+    Call<String> getPrinterSettings(
+            @Field("jobOwner") String username,
+            @Field("stationName") String stationName,
+            @Field("printerName") String printerName
     );
 
 }

@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         printJobListAdapter = new PrintJobListAdapter(this, printJobArray);
         lvJobList = (ListView) findViewById(R.id.lvJobList);
         lvJobList.setAdapter(printJobListAdapter);
-
         accountPreference = new AccountPreference(this);
         accountManager = AccountManager.get(this);
 

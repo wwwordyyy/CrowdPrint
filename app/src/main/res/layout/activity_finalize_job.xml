@@ -38,15 +38,17 @@
             android:layout_height="wrap_content"
             android:text="TextView" />
 
-        <Spinner
-            android:id="@+id/spPageSize"
+        <TextView
+            android:id="@+id/tvPageSize"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="t" />
 
-        <Spinner
-            android:id="@+id/spInkType"
+        <TextView
+            android:id="@+id/tvInkType"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="TextView" />
 
         <Button
             android:id="@+id/btnCreateJob"

@@ -97,11 +97,14 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
             // marker = mMap.addMarker(new MarkerOptions().position(currentLocation));
         } else{
             Toast.makeText(SelectStationActivity.this,"Searching for location", Toast.LENGTH_SHORT).show();
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(14.5024061,121.0305467)));
         }
 
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                Log.d(TAG,location.toString());
+                Toast.makeText(SelectStationActivity.this,location.toString(), Toast.LENGTH_SHORT).show();
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
                 if (marker != null) {
@@ -128,6 +131,7 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
         };
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 
+        //Gets list of stations
         Call<String> call = client.getStationList(userInformation.getUsername());
         call.enqueue(new Callback<String>() {
             @Override

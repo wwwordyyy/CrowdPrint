@@ -11,6 +11,34 @@ public class PrintJobSettings implements Serializable {
     private String stationName = "";
     private String printerName = "";
     private File jobFile = null;
+    private String pageSize = "";
+
+    public String getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(String pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    private float[] pageDimensions =null;
+    private String inkType = "";
+
+    public float[] getPageDimensions() {
+        return pageDimensions;
+    }
+
+    public void setPageDimensions(float[] pageDimensions) {
+        this.pageDimensions = pageDimensions;
+    }
+
+    public String getInkType() {
+        return inkType;
+    }
+
+    public void setInkType(String inkType) {
+        this.inkType = inkType;
+    }
 
     public String getStationName() {
         return stationName;
