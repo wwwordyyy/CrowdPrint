@@ -100,4 +100,12 @@ public interface CrowdPrintAPI {
             @Field("printerName") String printerName
     );
 
+    @FormUrlEncoded
+    @POST("getjob.php")
+    Call<String> updateJobStatus(
+      @Field("jobOwner") String username,
+      @Field("jobId") String jobKey,
+      @Field("statusUpdate") String  status
+    );
+
 }

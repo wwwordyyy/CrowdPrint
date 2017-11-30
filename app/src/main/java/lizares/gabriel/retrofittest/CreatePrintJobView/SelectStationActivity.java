@@ -14,6 +14,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,6 +44,7 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
     private GoogleMap mMap;
     private Marker marker;
     LocationManager locationManager;
+    LocationListener locationListener;
     CrowdPrintAPI client;
 
     ArrayList<PrintStationInfo> printStationList = new ArrayList<>();
@@ -62,6 +67,57 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
         userInformation = (UserInformation) getIntent().getSerializableExtra("userInformation");
         printJobSettings = (PrintJobSettings) getIntent().getSerializableExtra("printJobSettings");
         client = ServiceGenerator.CreateService(CrowdPrintAPI.class, userInformation.getAuthToken());
+
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
+                Log.i(TAG, "Place: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(LOCATION_PERMS, 41);
+            return;
+        }
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+              //  Log.d(TAG,location.toString());
+               // Toast.makeText(SelectStationActivity.this,location.toString(), Toast.LENGTH_SHORT).show();
+              //  LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+             //   mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,18));
+
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+                Toast.makeText(SelectStationActivity.this,"Enable GPS to determine your location", Toast.LENGTH_LONG).show();
+            }
+        };
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
     }
 
     @Override
@@ -77,7 +133,6 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(LOCATION_PERMS, 41);
@@ -86,50 +141,22 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
 
         mMap = googleMap;
         mMap.setOnInfoWindowClickListener(this);
-        mMap.setMinZoomPreference(18);
 
         mMap.setInfoWindowAdapter(new StationInfoWindowAdapter(this, userInformation));
 
-        Location lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        mMap.setMyLocationEnabled(true);
+        Location lastLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if (lastLocation != null) {
             LatLng currentLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,18));
             // marker = mMap.addMarker(new MarkerOptions().position(currentLocation));
         } else{
             Toast.makeText(SelectStationActivity.this,"Searching for location", Toast.LENGTH_SHORT).show();
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(14.5024061,121.0305467)));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.5024061,121.0305467),18));
         }
 
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.d(TAG,location.toString());
-                Toast.makeText(SelectStationActivity.this,location.toString(), Toast.LENGTH_SHORT).show();
-                LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-                if (marker != null) {
-                    marker.remove();
-                }
-                // marker = mMap.addMarker(new MarkerOptions().position(currentLocation));
 
-            }
 
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-
-            }
-        };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 
         //Gets list of stations
         Call<String> call = client.getStationList(userInformation.getUsername());

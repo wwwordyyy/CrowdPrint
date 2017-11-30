@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getSupportActionBar().hide();
 
         setURL = (Button) findViewById(R.id.setURL);
         rootIP = (EditText) findViewById(R.id.rootIP);
@@ -153,6 +155,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        lvJobList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG,printJobListAdapter.getItem(i).toString());
+                Intent intent = new Intent(MainActivity.this,PrintJobActivity.class);
+                intent.putExtra("userInformation", userInformation);
+                intent.putExtra("printJobInfo", printJobListAdapter.getItem(i));
+                startActivity(intent);
+            }
+        });
+
+
+
     }
 
 
@@ -188,8 +203,11 @@ public class MainActivity extends AppCompatActivity {
                     JSONArray arrayJobInfo = new JSONArray(response.body());
                     for (int index = 0; index < arrayJobInfo.length(); index++) {
                         JSONObject jobInfo = arrayJobInfo.getJSONObject(index);
-                        printJobListAdapter.add(new PrintJobInfo(jobInfo.getString("pdfJobName"),
-                                jobInfo.getString("jobId"), jobInfo.getString("price"), jobInfo.getString("status")));
+                        printJobListAdapter.add(new PrintJobInfo(jobInfo.getString("originalJobName"),
+                                jobInfo.getString("jobId"), jobInfo.getString("price"), jobInfo.getString("status"),
+                                jobInfo.getDouble("pageDimensionX"), jobInfo.getDouble("pageDimensionY"),
+                                jobInfo.getString("inkType")
+                        ));
                         printJobListAdapter.notifyDataSetChanged();
                         Log.d("ARRAYJSON", arrayJobInfo.getJSONObject(index).toString());
                     }
@@ -217,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                tvUserBalance.setText(response.body());
+                tvUserBalance.setText("P"+response.body());
             }
 
             @Override
@@ -233,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                tvUserBalance.setText(response.body());
+                tvUserBalance.setText("P"+response.body());
             }
 
             @Override

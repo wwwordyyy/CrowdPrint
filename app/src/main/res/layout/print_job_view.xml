@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/containerPrintJob"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
+    android:minHeight="0.5in"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/tvJobName"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
         android:text="Job Name" />
@@ -16,7 +18,7 @@
     <TextView
         android:id="@+id/tvJobPrice"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="2"
         android:gravity="center"
         android:text="Price" />
@@ -24,7 +26,7 @@
     <TextView
         android:id="@+id/tvStatus"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
         android:text="Status" />
@@ -32,15 +34,16 @@
     <Button
         android:id="@+id/btnPrint"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="Print" />
+        android:text="Print"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvJobKey"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
         android:text="Job Key"

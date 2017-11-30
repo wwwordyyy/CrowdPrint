@@ -61,7 +61,8 @@
             android:name=".CreatePrintJobView.SelectStationActivity"
             android:label="@string/title_activity_maps" />
         <activity android:name=".CreatePrintJobView.SelectPrinterActivity" />
-        <activity android:name=".CreatePrintJobView.FinalizeJobActivity"></activity>
+        <activity android:name=".CreatePrintJobView.FinalizeJobActivity" />
+        <activity android:name=".MainView.PrintJobActivity"></activity>
     </application>
 
 </manifest>

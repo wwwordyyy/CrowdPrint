@@ -13,47 +13,21 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Root IP:" />
+            android:text="Welcome "
+            android:textSize="36sp" />
 
-        <EditText
-            android:id="@+id/rootIP"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvWelcomeUser"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textSize="36sp" />
 
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Current URL: " />
-
-            <TextView
-                android:id="@+id/currentURL"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-    </HorizontalScrollView>
-
-    <Button
-        android:id="@+id/setURL"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Set URL" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,34 +37,25 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Welcome " />
-
-        <TextView
-            android:id="@+id/tvWelcomeUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Your Balance: " />
+            android:text="You have: "
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tvUserBalance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textSize="18sp" />
     </LinearLayout>
 
-
-    <Button
-        android:id="@+id/btnCreatePrintJob"
+    <TextView
+        android:id="@+id/textView10"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create A Print Job" />
+        android:background="@drawable/maroon_square_border"
+        android:gravity="center"
+        android:text="Print Jobs"
+        android:textSize="24sp" />
 
     <ListView
         android:id="@+id/lvJobList"
@@ -98,10 +63,71 @@
         android:layout_height="wrap_content"></ListView>
 
     <Button
+        android:id="@+id/btnCreatePrintJob"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create A Print Job" />
+
+    <Button
         android:id="@+id/btnAddBalance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Add Balance" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Current URL: " />
+
+                <TextView
+                    android:id="@+id/currentURL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Root IP:" />
+
+            <EditText
+                android:id="@+id/rootIP"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/setURL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set URL" />
+
+    </LinearLayout>
 
 
 </LinearLayout>
