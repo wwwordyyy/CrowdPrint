@@ -74,14 +74,12 @@ public class SelectStationActivity extends AppCompatActivity implements OnMapRea
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
                 Log.i(TAG, "Place: " + place.getName());
             }
 
             @Override
             public void onError(Status status) {
-                // TODO: Handle the error.
                 Log.i(TAG, "An error occurred: " + status);
             }
         });
